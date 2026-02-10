@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="description" content="Juego educativo de matemáticas para niños de preescolar. Aprende a contar del 1 al 5 con la Gallina, el Caballo y la Vaca." />
+  <meta name="theme-color" content="#ff4fa3" />
+  <title>La Granja - Juego Educativo de Preescolar</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bgfx" id="bgfx" aria-hidden="true"></div>
+  <canvas class="vfx" id="vfxCanvas" aria-hidden="true"></canvas>
+  <header class="topbar" aria-label="Barra superior">
+    <button class="icon-btn" id="btnHome" aria-label="Inicio">🏠</button>
+    <div class="topbar__center">
+<div class="topbar__title" id="topTitle"></div>
+    </div>
+    <div class="topbar__right">
+      <button class="icon-btn" id="btnRepeat" aria-label="Repetir instrucción">🔁</button>
+      <button class="icon-btn" id="btnSound" aria-label="Sonido">🔊</button>
+    </div>
+  </header>
+
+  <main class="app" id="app">
+    <!-- MENU -->
+    <section class="screen is-active" id="screenMenu" aria-label="Menú">
+      <div class="menu">
+        <div class="menu__sparkles" aria-hidden="true">
+          <span class="sparkle s1">✨</span>
+          <span class="sparkle s2">🌟</span>
+          <span class="sparkle s3">✨</span>
+          <span class="sparkle s4">⭐</span>
+          <span class="sparkle s5">✨</span>
+          <span class="sparkle s6">🌟</span>
+          <span class="sparkle s7">⭐</span>
+          <span class="sparkle s8">✨</span>
+          <span class="sparkle s9">🌟</span>
+          <span class="sparkle s10">✨</span>
+          <span class="sparkle s11">⭐</span>
+          <span class="sparkle s12">✨</span>
+        
+          <span class="sparkle s13">✨</span>
+          <span class="sparkle s14">⭐</span>
+          <span class="sparkle s15">🌟</span>
+          <span class="sparkle s16">✨</span>
+          <span class="sparkle s17">🦋</span>
+          <span class="sparkle s18">🌼</span>
+          <span class="sparkle s19">🍀</span>
+          <span class="sparkle s20">🐣</span>
+          <span class="sparkle s21">🍎</span>
+          <span class="sparkle s22">✨</span>
+          <span class="sparkle s23">⭐</span>
+          <span class="sparkle s24">🌟</span>
+          <span class="sparkle s25">✨</span>
+          <span class="sparkle s26">🌈</span>
+          <span class="sparkle s27">🌸</span>
+          <span class="sparkle s28">✨</span>
+        </div>
+
+        <h1 class="menu__title">JUEGOS DE LA GRANJA</h1>
+
+        <div class="cards" role="navigation" aria-label="Juegos">
+          <button class="card card--gallina" id="goGallina">
+            <div class="card__icon">🐔</div>
+            <div class="card__text">
+              <div class="card__title">Gallina</div>
+              <div class="card__subtitle">Canastas</div>
+            </div>
+          </button>
+
+          <button class="card card--caballo" id="goCaballo">
+            <div class="card__icon">🐴</div>
+            <div class="card__text">
+              <div class="card__title">Caballo</div>
+              <div class="card__subtitle">Saltar vallas</div>
+            </div>
+          </button>
+
+          <button class="card card--vaca" id="goVaca">
+            <div class="card__icon">🐮</div>
+            <div class="card__text">
+              <div class="card__title">Vaca</div>
+              <div class="card__subtitle">Pastitos</div>
+            </div>
+          </button>
+        </div>
+
+        <div class="credit">Juego creado por Sofía Mendez Rodríguez</div>
+</div>
+    </section>
+
+    <!-- GALLINA -->
+    <section class="screen" id="screenGallina" aria-label="Juego de la gallina">
+      <div class="game">
+        <div class="game__row">
+          <div class="pet">
+            <img src="assets/img/gallina.gif" alt="Gallina" class="pet__gif" aria-hidden="true">
+            <div class="pet__bubble" id="gallinaPrompt">¿En qué canasta hay <b>1</b> manzanas?</div>
+          </div>
+        </div>
+
+        <div class="gallina-sign" aria-label="Letrero del número objetivo">
+          <div class="gallina-sign__board">
+            <div class="gallina-sign__label">Busca</div>
+            <div class="gallina-sign__num" id="gallinaSignNum">1</div>
+          </div>
+        </div>
+
+        <div class="baskets" id="gallinaBaskets" aria-label="Canastas"></div>
+
+        <div class="footerbar">
+          <button class="primary-btn" id="gallinaNext" disabled>Continuar</button>
+        </div>
+      </div>
+    </section>
+
+<!-- CABALLO -->
+    <section class="screen" id="screenCaballo" aria-label="Juego del caballo">
+      <div class="game">
+        <div class="game__row">
+          <div class="pet">
+            <div class="horse-emoji" id="horse">🐴</div>
+            <div class="pet__bubble" id="caballoPrompt">Toca un círculo</div>
+          </div>
+
+          <div class="target">
+            <div class="target__num" id="caballoTargetNum">?</div>
+          </div>
+        </div>
+
+        <div class="track" aria-label="Pista con vallas">
+          <div class="track__lane">
+            <img src="assets/img/caballo.gif" alt="Caballo" class="horse-gif" id="horseGif" aria-hidden="true">
+            <div class="fences" id="fences"></div>
+</div>
+          <div class="progress" id="caballoProgress">0 / 0</div>
+        </div>
+
+        <div class="circles" id="caballoCircles" aria-label="Círculos con números ocultos"></div>
+
+        <div class="footerbar footerbar--three">
+          <button class="primary-btn" id="btnSaltar" disabled>SALTAR VALLA</button>
+          <button class="secondary-btn" id="btnComprobar" disabled>COMPROBAR</button>
+          <button class="primary-btn" id="caballoNext" disabled>Siguiente</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VACA -->
+    <section class="screen" id="screenVaca" aria-label="Juego de la vaca">
+      <div class="game">
+        <div class="game__row">
+          <div class="pet">
+            <img src="assets/img/vaca.gif" alt="Vaca" class="pet__gif" aria-hidden="true">
+            <div class="pet__bubble" id="vacaPrompt">Tengo hambre… dame <b>1</b> pastitos</div>
+          </div>
+
+          <div class="target">
+            <div class="target__num" id="vacaTargetNum">1</div>
+            <div class="target__dots" id="vacaDots" aria-label="Puntos"></div>
+          </div>
+        </div>
+
+        <div class="field" id="vacaField" aria-label="Campo de pastitos"></div>
+
+        <div class="footerbar">
+          <div class="progress-dots" id="vacaProgressDots" aria-label="Progreso"></div>
+          <button class="primary-btn" id="vacaNext" disabled>Siguiente</button>
+        </div>
+      </div>
+    </section>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  
+    <!-- FEEDBACK OVERLAY -->
+    <div class="overlay" id="feedbackOverlay" aria-hidden="true">
+      <div class="overlay__card" id="feedbackCard">
+        <div class="overlay__text" id="feedbackText">Correcto</div>
+      </div>
+    </div>
+
+    <!-- Background Music -->
+    <audio id="bgMusic" loop preload="auto">
+      <source src="assets/sfx/intromusic.m4a" type="audio/mp4">
+    </audio>
+
+</main>
+
+  <script src="app.js"></script>
+</body>
+</html>
