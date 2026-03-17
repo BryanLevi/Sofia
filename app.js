@@ -771,9 +771,12 @@ function randInt(min, max) {
   const gallinaBaskets = $("#gallinaBaskets");
   const gallinaSignNum = $("#gallinaSignNum");
   const gallinaNext = $("#gallinaNext");
+  const gallinaComprobar = $("#gallinaComprobar");
 
   let gallinaN = 1;
   let gallinaSolved = false;
+  let gallinaSelectedVal = null;
+  let gallinaSelectedBtn = null;
 
   function renderDots(container, n) {
     container.innerHTML = "";
@@ -813,7 +816,10 @@ function randInt(min, max) {
 
   function gallinaStart() {
     gallinaSolved = false;
+    gallinaSelectedVal = null;
+    gallinaSelectedBtn = null;
     gallinaNext.disabled = true;
+    if (gallinaComprobar) gallinaComprobar.disabled = true;
 
     // Número objetivo sin repeticiones seguidas
     gallinaN = nextTargetNumber();
@@ -842,52 +848,60 @@ function randInt(min, max) {
       btn.appendChild(label);
       btn.addEventListener("click", () => {
         if (gallinaSolved) return;
-        // lock after correct; if wrong, show hint but allow retry
-        if (v === gallinaN) {
-          gallinaSolved = true;
-          btn.classList.add("is-correct");
-          showFeedback("ok");
-          playGallinaSound();
-          fxCelebrate(gallinaGif);
-          try {
-            const r = gallinaGif?.getBoundingClientRect?.();
-            if (r) createConfetti(r.left + r.width/2, r.top + r.height/2);
-          } catch(e) {}
-          playSuccessMelody();
-          speak(`¡Correcto! ${ES_NUM[gallinaN] || gallinaN}`);
-          gallinaNext.disabled = false;
-          
-          // Confetti effect
-          const rect = btn.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
-          createConfetti(centerX, centerY);
-          
-          // lock all
-          Array.from(gallinaBaskets.children).forEach(b => b.classList.add("is-locked"));
-        } else {
-          btn.classList.add("is-wrong");
-          // (Sin letrero de incorrecto: solo voz)
-          beep(220, 0.08);
-          showFeedback("bad");
-          fxSad(gallinaGif);
-          speak("Incorrecto vuelve a intentar");
-          // highlight correct briefly
-          const correctBtn = Array.from(gallinaBaskets.children).find(b => {
-            return b.getAttribute("aria-label") === `Canasta con ${gallinaN} ${pluralize(gallinaN, "huevo", "huevos")}`;
-          });
-          if (correctBtn) correctBtn.classList.add("is-correct");
-          window.setTimeout(() => {
-            btn.classList.remove("is-wrong");
-            if (correctBtn && !gallinaSolved) correctBtn.classList.remove("is-correct");
-          }, 650);
-        }
+        // Deseleccionar la anterior
+        if (gallinaSelectedBtn) gallinaSelectedBtn.classList.remove("is-selected");
+        // Seleccionar esta canasta
+        gallinaSelectedVal = v;
+        gallinaSelectedBtn = btn;
+        btn.classList.add("is-selected");
+        playGallinaSound();
+        if (gallinaComprobar) gallinaComprobar.disabled = false;
       });
       gallinaBaskets.appendChild(btn);
     });
   }
 
   gallinaNext.addEventListener("click", () => gallinaStart());
+
+  if (gallinaComprobar) {
+    gallinaComprobar.addEventListener("click", () => {
+      if (gallinaSolved || gallinaSelectedVal === null) return;
+
+      if (gallinaSelectedVal === gallinaN) {
+        // ✅ Correcto
+        gallinaSolved = true;
+        gallinaSelectedBtn.classList.remove("is-selected");
+        gallinaSelectedBtn.classList.add("is-correct");
+        showFeedback("ok");
+        fxCelebrate(gallinaGif);
+        try {
+          const r = gallinaGif?.getBoundingClientRect?.();
+          if (r) createConfetti(r.left + r.width/2, r.top + r.height/2);
+        } catch(e) {}
+        playSuccessMelody();
+        speak("¡Correcto!");
+        const rect = gallinaSelectedBtn.getBoundingClientRect();
+        createConfetti(rect.left + rect.width/2, rect.top + rect.height/2);
+        Array.from(gallinaBaskets.children).forEach(b => b.classList.add("is-locked"));
+        gallinaComprobar.disabled = true;
+        gallinaNext.disabled = false;
+      } else {
+        // ❌ Incorrecto
+        gallinaSelectedBtn.classList.remove("is-selected");
+        gallinaSelectedBtn.classList.add("is-wrong");
+        beep(220, 0.08);
+        showFeedback("bad");
+        fxSad(gallinaGif);
+        speak("Incorrecto vuelve a intentar");
+        window.setTimeout(() => {
+          if (gallinaSelectedBtn) gallinaSelectedBtn.classList.remove("is-wrong");
+          gallinaSelectedVal = null;
+          gallinaSelectedBtn = null;
+          gallinaComprobar.disabled = true;
+        }, 650);
+      }
+    });
+  }
 
   // ---------- CABALLO ----------
   const caballoPrompt = $("#caballoPrompt");
@@ -1135,7 +1149,6 @@ function caballoStart() {
 
     setHorsePos(jumps);
     playHorseSound();
-    speakNumber(jumps);
 
     caballoProgress.textContent = `${jumps} / ${caballoN}`;
 
@@ -1221,6 +1234,7 @@ caballoNext.addEventListener("click", () => caballoStart());
   const vacaField = $("#vacaField");
   const vacaProgressDots = $("#vacaProgressDots");
   const vacaNext = $("#vacaNext");
+  const vacaComprobar = $("#vacaComprobar");
 
   let vacaN = 1;
   let eaten = 0;
@@ -1239,6 +1253,7 @@ caballoNext.addEventListener("click", () => caballoStart());
     vacaLock = false;
     eaten = 0;
     vacaNext.disabled = true;
+    if (vacaComprobar) vacaComprobar.disabled = true;
 
     // Número objetivo sin repeticiones seguidas
     vacaN = nextTargetNumber();
@@ -1372,35 +1387,64 @@ caballoNext.addEventListener("click", () => caballoStart());
     eaten += 1;
     
     playCowSound(); // Muuu!
-    speakNumber(eaten);
     renderProgressDots(vacaProgressDots, vacaN, eaten);
 
-    if (eaten >= vacaN) {
-      vacaLock = true;
-      playSuccessMelody();
-      showFeedback("ok");
-      fxCelebrate(vacaGif);
-      try {
-        const r = vacaGif?.getBoundingClientRect?.();
-        if (r) sparkBurst(r.left + r.width/2, r.top + r.height/2, 22);
-      } catch(e) {}
-      speak("¡Muy bien!");
-      // VFX
-      try {
-        const cow = document.querySelector("#screenVaca .pet__gif");
-        const r = (cow ? cow.getBoundingClientRect() : vacaField.getBoundingClientRect());
-        const x = r.left + r.width/2;
-        const y = r.top + r.height/2;
-        createConfetti(x, y);
-        sparkBurst(x, y, 26);
-      } catch(e) {}
-      vacaNext.disabled = false;
-      // lock remaining
-      Array.from(vacaField.children).forEach(btn => btn.classList.add("is-eaten"));
-    }
+    // Habilitar Comprobar desde el primer pastito
+    if (vacaComprobar) vacaComprobar.disabled = false;
   }
 
   vacaNext.addEventListener("click", () => vacaStart());
+
+  if (vacaComprobar) {
+    vacaComprobar.addEventListener("click", () => {
+      if (vacaLock) return;
+
+      if (eaten === vacaN) {
+        // ✅ Correcto
+        vacaLock = true;
+        playSuccessMelody();
+        showFeedback("ok");
+        fxCelebrate(vacaGif);
+        try {
+          const r = vacaGif?.getBoundingClientRect?.();
+          if (r) sparkBurst(r.left + r.width/2, r.top + r.height/2, 22);
+        } catch(e) {}
+        speak("¡Muy bien!");
+        try {
+          const cow = document.querySelector("#screenVaca .pet__gif");
+          const r = (cow ? cow.getBoundingClientRect() : vacaField.getBoundingClientRect());
+          const x = r.left + r.width/2;
+          const y = r.top + r.height/2;
+          createConfetti(x, y);
+          sparkBurst(x, y, 26);
+        } catch(e) {}
+        vacaComprobar.disabled = true;
+        vacaNext.disabled = false;
+        // Bloquear el pasto restante
+        Array.from(vacaField.children).forEach(g => g.classList.add("is-eaten"));
+      } else {
+        // ❌ Incorrecto: mostrar feedback y reiniciar el conteo
+        showFeedback("bad");
+        fxSad(vacaGif);
+        speak("Incorrecto, vuelve a intentar");
+        // Restaurar todos los pastitos
+        eaten = 0;
+        renderProgressDots(vacaProgressDots, vacaN, eaten);
+        Array.from(vacaField.children).forEach(g => {
+          g.classList.remove("is-eaten");
+          g.style.transform = '';
+          g.style.position = '';
+          g.style.left = '';
+          g.style.top = '';
+          g.style.width = '';
+          g.style.height = '';
+          g.style.zIndex = '';
+          g.style.margin = '';
+        });
+        vacaComprobar.disabled = true;
+      }
+    });
+  }
 
   // ---------- Navigation & Repeat ----------
   let currentScreen = "menu";
